@@ -14,8 +14,6 @@ struct bbvm: ParsableCommand {
     
     func run() throws {
         
-        print("Path to file: {\(exePath)}")
-        
         let program = try fetchProgram()
         
         let virtualMachine = BreadboardVM()
@@ -46,10 +44,6 @@ struct bbvm: ParsableCommand {
             
             code.append(twosComplement)
             
-        }
-        
-        for n in code {
-            print(n)
         }
         
         return code

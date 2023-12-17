@@ -1,17 +1,15 @@
 class BreadboardVM {
     
-    static let addressBound = 1 << 15   // Exclusive
+    static let addressBound: T = 1 << 15   // Exclusive
     static let maximumNumberOfInstructions = 1_000_000
     
     var numberOfInstructions = 0
     
-    var ir: T = 0
-    var pc: T = 0
+    var pc: T = 2048
     
     var registers = [T](repeating: 0, count: 8)
     
-    var ram = [T](repeating: 0, count: addressBound)
-    
+    var ram = RAM()
     
     func run(_ program: [T]) {
         
@@ -22,13 +20,33 @@ class BreadboardVM {
             runInstruction()
         }
         
+        print("Execution finished.")
+        print("\tregisters: \(registers)")
+        print("\tpc: \(pc)")
+        print("\tram: [")
+        
+        var index: UInt16 = 0
+        while index < ram.data.count {
+            
+            print("\t\t[\(index)] \(ram[index])")
+            
+            index += 1
+            
+            while ram[index - 1] == 0 && ram[index] == 0 {
+                index += 1
+            }
+            
+        }
+        
+        print("\t]")
+        
     }
     
     
     private func load(_ program: [T]) {
         
         for index in 0 ..< program.count {
-            ram[index] = program[index]
+            ram[T(index)] = program[index]
         }
         
     }
@@ -38,13 +56,11 @@ class BreadboardVM {
         
         let (opcode, srcA, srcB, dest, imm) = decodeInstruction()
         
-        print("Decoded: \((opcode, srcA, srcB, dest, imm))")
-        
         incrementPC()
         
         switch opcode {
         case 0x00:  // nop
-            break
+            numberOfInstructions = Self.maximumNumberOfInstructions
         case 0x01:  // mv %dst, %src
             registers[dest] = registers[srcA]
         case 0x02:  // li %dst, $imm
@@ -121,5 +137,19 @@ class BreadboardVM {
         pc = pc &+ 1
     }
     
+    
+}
+
+struct RAM {
+    
+    var data = [T](repeating: 0, count: Int(BreadboardVM.addressBound))
+    
+    subscript(i: T) -> T {
+        get {
+            return data[i % BreadboardVM.addressBound]
+        } set {
+            data[i % BreadboardVM.addressBound] = newValue
+        }
+    }
     
 }
