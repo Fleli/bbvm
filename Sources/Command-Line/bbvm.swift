@@ -2,6 +2,8 @@
 import Foundation
 import ArgumentParser
 
+typealias T = UInt16
+
 @main
 struct bbvm: ParsableCommand {
     
@@ -22,11 +24,11 @@ struct bbvm: ParsableCommand {
     }
     
     
-    private func fetchProgram() throws -> [Int] {
+    private func fetchProgram() throws -> [T] {
         
         let text = try String(contentsOfFile: exePath)
         
-        var code: [Int] = []
+        var code: [T] = []
         
         for (n, line) in text.split(separator: "\n").enumerated() {
             
@@ -34,7 +36,15 @@ struct bbvm: ParsableCommand {
                 fatalError("Incorrect file format on line \(n + 1)")
             }
             
-            code.append(int)
+            if int >= 0 {
+                code.append(T(int))
+                continue
+            }
+            
+            let positiveInt = T(-int)
+            let twosComplement = ~positiveInt &+ 1
+            
+            code.append(twosComplement)
             
         }
         
