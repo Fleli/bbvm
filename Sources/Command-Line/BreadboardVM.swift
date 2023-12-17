@@ -11,34 +11,19 @@ class BreadboardVM {
     
     var ram = RAM()
     
-    func run(_ program: [T]) {
+    func run(_ program: [T], _ viewExecution: Bool) {
         
         load(program)
         
         while (self.numberOfInstructions < Self.maximumNumberOfInstructions) {
             numberOfInstructions += 1
-            runInstruction()
+            runInstruction(viewExecution)
         }
         
         print("Execution finished.")
         print("\tregisters: \(registers)")
         print("\tpc: \(pc)")
-        print("\tram: [")
-        
-        var index: UInt16 = 0
-        while index < ram.data.count {
-            
-            print("\t\t[\(index)] \(ram[index])")
-            
-            index += 1
-            
-            while ram[index - 1] == 0 && ram[index] == 0 {
-                index += 1
-            }
-            
-        }
-        
-        print("\t]")
+        print(ram)
         
     }
     
@@ -52,9 +37,16 @@ class BreadboardVM {
     }
     
     
-    private func runInstruction() {
+    private func runInstruction(_ viewExecution: Bool) {
         
         let (opcode, srcA, srcB, dest, imm) = decodeInstruction()
+        
+        if viewExecution {
+            print("opcode:", opcode, "\nsrcA:", srcA, "\nsrcB:", srcB, "\ndest:", dest, "\nimm?:", imm)
+            print("PC = \(pc)")
+            print(ram)
+            print("\n---\n")
+        }
         
         incrementPC()
         
@@ -140,9 +132,9 @@ class BreadboardVM {
     
 }
 
-struct RAM {
+struct RAM: CustomStringConvertible {
     
-    var data = [T](repeating: 0, count: Int(BreadboardVM.addressBound))
+    private var data = [T](repeating: 0, count: Int(BreadboardVM.addressBound))
     
     subscript(i: T) -> T {
         get {
@@ -150,6 +142,29 @@ struct RAM {
         } set {
             data[i % BreadboardVM.addressBound] = newValue
         }
+    }
+    
+    var description: String {
+        
+        var str = "\tram: [\n"
+        
+        var index: UInt16 = 0
+        while index < data.count {
+            
+            str += "\t\t[\(index)] \(self[index])\n"
+            
+            index += 1
+            
+            while self[index - 1] == 0 && self[index] == 0 {
+                index += 1
+            }
+            
+        }
+        
+        str += "\t]"
+        
+        return str
+        
     }
     
 }

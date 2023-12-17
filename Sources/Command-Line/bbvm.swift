@@ -12,12 +12,16 @@ struct bbvm: ParsableCommand {
     var exePath: String
     
     
+    @ArgumentParser.Flag(help: "View state at every step.")
+    var viewExecution = false
+    
+    
     func run() throws {
         
         let program = try fetchProgram()
         
         let virtualMachine = BreadboardVM()
-        virtualMachine.run(program)
+        virtualMachine.run(program, viewExecution)
         
     }
     
