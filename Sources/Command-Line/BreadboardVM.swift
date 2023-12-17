@@ -100,7 +100,6 @@ class BreadboardVM {
             registers[dest] = registers[srcA] &+ imm
             incrementPC()
         case 0x13:  // st %addr, %val
-            print("0x13 with \(srcA) as address and \(srcB) as value")
             ram[registers[srcA]] = registers[srcB]
         default:
             fatalError("Unrecognized opcode \(opcode) yields undefined behaviour. Terminating execution after \(numberOfInstructions) completed instructions.")
