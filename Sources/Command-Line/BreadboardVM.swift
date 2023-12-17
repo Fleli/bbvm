@@ -1,7 +1,9 @@
 class BreadboardVM {
     
     static let addressBound: T = 1 << 15   // Exclusive
-    static let maximumNumberOfInstructions = 1_000_000
+    static let maximumNumberOfInstructions = 10_000
+    
+    static let mapping: [String] = ["nop", "mv", "li", "ldraw", "ldind", "ldio", "stio", "add", "sub", "neg", "xor", "nand", "and", "or", "not", "j", "jnz", "jimm", "addi", "st"]
     
     var numberOfInstructions = 0
     
@@ -42,9 +44,10 @@ class BreadboardVM {
         let (opcode, srcA, srcB, dest, imm) = decodeInstruction()
         
         if viewExecution {
-            print("opcode:", opcode, "\nsrcA:", srcA, "\nsrcB:", srcB, "\ndest:", dest, "\nimm?:", imm)
+            print("opcode:", opcode, "\t\t; \(Self.mapping[opcode])", "\nsrcA:", srcA, "\nsrcB:", srcB, "\ndest:", dest, "\nimm?:", imm)
             print("PC = \(pc)")
-            print(ram)
+            print("Regs: \(registers)")
+            print(ram.delimitedDescription(0, 10))
             print("\n---\n")
         }
         
@@ -96,6 +99,9 @@ class BreadboardVM {
         case 0x12:  // addi %dst, %src, $imm
             registers[dest] = registers[srcA] &+ imm
             incrementPC()
+        case 0x13:  // st %addr, %val
+            print("0x13 with \(srcA) as address and \(srcB) as value")
+            ram[registers[srcA]] = registers[srcB]
         default:
             fatalError("Unrecognized opcode \(opcode) yields undefined behaviour. Terminating execution after \(numberOfInstructions) completed instructions.")
         }
@@ -145,11 +151,15 @@ struct RAM: CustomStringConvertible {
     }
     
     var description: String {
+        return delimitedDescription(0, BreadboardVM.addressBound - 1)
+    }
+    
+    func delimitedDescription(_ min: T, _ max: T) -> String {
         
         var str = "\tram: [\n"
         
-        var index: UInt16 = 0
-        while index < data.count {
+        var index = min
+        while index <= max {
             
             str += "\t\t[\(index)] \(self[index])\n"
             
