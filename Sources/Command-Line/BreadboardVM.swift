@@ -1,31 +1,47 @@
 class BreadboardVM {
     
     static let addressBound: T = 1 << 15   // Exclusive
-    static let maximumNumberOfInstructions = 10_000
+    static var maximumNumberOfInstructions = 10
     
     static let mapping: [String] = ["nop", "mv", "li", "ldraw", "ldind", "ldio", "stio", "add", "sub", "neg", "xor", "nand", "and", "or", "not", "j", "jnz", "jimm", "addi", "st"]
     
     var numberOfInstructions = 0
     
-    var pc: T = 2048
+    var pc: T = 0
     
     var registers = [T](repeating: 0, count: 8)
     
     var ram = RAM()
     
-    func run(_ program: [T], _ viewExecution: Bool) {
+    var notHalted = true
+    
+    func run(_ program: [T], _ viewVerbose: Bool, _ viewShort: Bool) {
         
         load(program)
         
-        while (self.numberOfInstructions < Self.maximumNumberOfInstructions) {
-            numberOfInstructions += 1
-            runInstruction(viewExecution)
+        if viewVerbose || viewShort {
+            print("Starting execution with \(ram)")
+            print("\n-----\n")
         }
         
-        print("Execution finished.")
-        print("\tregisters: \(registers)")
-        print("\tpc: \(pc)")
-        print(ram)
+        while (self.numberOfInstructions < Self.maximumNumberOfInstructions) && notHalted {
+            numberOfInstructions += 1
+            runInstruction(viewVerbose, viewShort)
+        }
+        
+        if viewVerbose || viewShort {
+            print("Execution finished.")
+            print("\tregisters: \(registers)")
+            print("\tpc: \(pc)")
+            print(ram)
+            print("Terminated after \(numberOfInstructions) instructions (Ceiling was \(Self.maximumNumberOfInstructions))")
+        }
+        
+        print("\n--------------------------------------\n\nReturned from main\t\t\(ram[2046])\n\n--------------------------------------\n")
+        
+        if (self.numberOfInstructions >= Self.maximumNumberOfInstructions) {
+            print("\nTERMINATED DUE TO LONG EXECUTION: \(self.numberOfInstructions)\n")
+        }
         
     }
     
@@ -39,23 +55,26 @@ class BreadboardVM {
     }
     
     
-    private func runInstruction(_ viewExecution: Bool) {
+    private func runInstruction(_ viewVerbose: Bool, _ viewShort: Bool) {
         
         let (opcode, srcA, srcB, dest, imm) = decodeInstruction()
         
-        if viewExecution {
+        if (viewVerbose || viewShort) && opcode <= 0x13 {
+            print(opcode, srcA, srcB, dest, imm)
             print("opcode:", opcode, "\t\t; \(Self.mapping[opcode])", "\nsrcA:", srcA, "\nsrcB:", srcB, "\ndest:", dest, "\nimm?:", imm)
             print("PC = \(pc)")
-            print("Regs: \(registers)")
-            print(ram.delimitedDescription(0, 10))
-            print("\n---\n")
+            print("Regs: \(registers)\n")
+        }
+        
+        if viewVerbose {
+            print(ram, "\n-----")
         }
         
         incrementPC()
         
         switch opcode {
         case 0x00:  // nop
-            numberOfInstructions = Self.maximumNumberOfInstructions
+            notHalted = false
         case 0x01:  // mv %dst, %src
             registers[dest] = registers[srcA]
         case 0x02:  // li %dst, $imm
@@ -164,7 +183,7 @@ struct RAM: CustomStringConvertible {
             
             index += 1
             
-            while self[index - 1] == 0 && self[index] == 0 {
+            while self[index - 1] == 0 && self[index] == 0 && index <= max {
                 index += 1
             }
             
