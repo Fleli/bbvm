@@ -15,7 +15,7 @@ class BreadboardVM {
     
     var notHalted = true
     
-    func run(_ program: [T], _ viewVerbose: Bool, _ viewShort: Bool) {
+    func run(_ program: [T], _ viewVerbose: Bool, _ viewShort: Bool, _ viewFinal: Bool) {
         
         load(program)
         
@@ -29,7 +29,7 @@ class BreadboardVM {
             runInstruction(viewVerbose, viewShort)
         }
         
-        if viewVerbose || viewShort {
+        if viewVerbose || viewShort || viewFinal {
             print("Execution finished.")
             print("\tregisters: \(registers)")
             print("\tpc: \(pc)")

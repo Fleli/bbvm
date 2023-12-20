@@ -14,6 +14,9 @@ struct Run: ParsableCommand {
     @ArgumentParser.Flag(help: "View shortened state (excluding RAM) at every step.")
     var viewShort = false
     
+    @ArgumentParser.Flag(help: "View the final state of RAM and registers when execution terminates.")
+    var viewFinal = false
+    
     @ArgumentParser.Option(help: "Specify the maximum number of instructions the VM is allowed to execute.")
     var maxInstructions: Int = 100_000
     
@@ -24,7 +27,7 @@ struct Run: ParsableCommand {
         
         BreadboardVM.maximumNumberOfInstructions = self.maxInstructions
         let virtualMachine = BreadboardVM()
-        virtualMachine.run(program, viewVerbose, viewShort)
+        virtualMachine.run(program, viewVerbose, viewShort, viewFinal)
         
     }
     
