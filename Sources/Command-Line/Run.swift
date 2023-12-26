@@ -20,6 +20,9 @@ struct Run: ParsableCommand {
     @ArgumentParser.Option(help: "Specify the maximum number of instructions the VM is allowed to execute.")
     var maxInstructions: Int = 100_000
     
+    @ArgumentParser.Flag(help: "Open a window with a 200x150 pixels display similar to the VGA display the breadboard computer will use.")
+    var vga: Bool = false
+    
     
     func run() throws {
         
@@ -27,7 +30,7 @@ struct Run: ParsableCommand {
         
         BreadboardVM.maximumNumberOfInstructions = self.maxInstructions
         let virtualMachine = BreadboardVM()
-        virtualMachine.run(program, viewVerbose, viewShort, viewFinal)
+        virtualMachine.run(program, viewVerbose, viewShort, viewFinal, vga)
         
     }
     

@@ -13,9 +13,15 @@ class BreadboardVM {
     
     var ram = RAM()
     
+    var vga: VGA? = nil
+    
     var notHalted = true
     
-    func run(_ program: [T], _ viewVerbose: Bool, _ viewShort: Bool, _ viewFinal: Bool) {
+    func run(_ program: [T], _ viewVerbose: Bool, _ viewShort: Bool, _ viewFinal: Bool, _ vga: Bool) {
+        
+        if vga {
+            self.vga = VGA()
+        }
         
         load(program)
         
