@@ -1,6 +1,30 @@
 
 import ArgumentParser
 
+
+struct Subrange: ExpressibleByArgument {
+    
+    let start: Int
+    let end: Int
+    
+    init?(argument: String) {
+        
+        print("Argument {\(argument)}")
+        
+        let parts = argument.split(separator: " ")
+        
+        guard parts.count == 2, let start = Int(parts[0]), let end = Int(parts[1]) else {
+            return nil
+        }
+        
+        self.start = start
+        self.end = end
+        
+    }
+    
+}
+
+
 struct Run: ParsableCommand {
     
     
@@ -13,6 +37,9 @@ struct Run: ParsableCommand {
     
     @ArgumentParser.Flag(help: "View shortened state (excluding RAM) at every step.")
     var viewShort = false
+    
+    @ArgumentParser.Option(help: "View a specific subrange of RAM at every step.")
+    var viewSubrange: Subrange?
     
     @ArgumentParser.Flag(help: "View the final state of RAM and registers when execution terminates.")
     var viewFinal = false
@@ -30,7 +57,7 @@ struct Run: ParsableCommand {
         
         BreadboardVM.maximumNumberOfInstructions = self.maxInstructions
         let virtualMachine = BreadboardVM()
-        virtualMachine.run(program, viewVerbose, viewShort, viewFinal, vga)
+        virtualMachine.run(program, viewVerbose, viewShort, viewSubrange, viewFinal, vga)
         
     }
     

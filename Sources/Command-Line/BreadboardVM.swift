@@ -3,6 +3,8 @@ class BreadboardVM {
     static let addressBound: T = 1 << 15   // Exclusive
     static var maximumNumberOfInstructions = 10
     
+    static let trapRequestAddress: T = 2000
+    
     static let mapping: [String] = ["nop", "mv", "li", "ldraw", "ldind", "ldio", "stio", "add", "sub", "neg", "xor", "nand", "and", "or", "not", "j", "jnz", "jimm", "addi", "st"]
     
     var numberOfInstructions = 0
@@ -13,15 +15,9 @@ class BreadboardVM {
     
     var ram = RAM()
     
-    var vga: VGA? = nil
-    
     var notHalted = true
     
-    func run(_ program: [T], _ viewVerbose: Bool, _ viewShort: Bool, _ viewFinal: Bool, _ vga: Bool) {
-        
-        if vga {
-            self.vga = VGA()
-        }
+    func run(_ program: [T], _ viewVerbose: Bool, _ viewShort: Bool, _ viewSubrange: Subrange?, _ viewFinal: Bool, _ vga: Bool) {
         
         load(program)
         
@@ -41,6 +37,10 @@ class BreadboardVM {
             print("\tpc: \(pc)")
             print(ram)
             print("Terminated after \(numberOfInstructions) instructions (Ceiling was \(Self.maximumNumberOfInstructions))")
+        }
+        
+        if let viewSubrange {
+            print(ram.delimitedDescription(T(viewSubrange.start), T(viewSubrange.end)))
         }
         
         print("\n--------------------------------------\n\nReturned from main\t\t\(ram[2046])\n\n--------------------------------------\n")
@@ -130,6 +130,8 @@ class BreadboardVM {
             fatalError("Unrecognized opcode \(opcode) yields undefined behaviour. Terminating execution after \(numberOfInstructions) completed instructions.")
         }
         
+        handleTrapRequest()
+        
     }
     
     
@@ -157,6 +159,45 @@ class BreadboardVM {
     
     private func incrementPC() {
         pc = pc &+ 1
+    }
+    
+    
+    private func handleTrapRequest() {
+        
+        let trapRequest = ram[Self.trapRequestAddress]
+        
+        guard trapRequest != 0 else {
+            return
+        }
+        
+        switch trapRequest {
+            
+        // print(char*)
+        case 1:
+            
+            func arg(_ i: T) -> T? {
+                let val = ram[Self.trapRequestAddress + i]
+                return (val == 0) ? nil : val
+            }
+            
+            var i: T = 0
+            
+            while i < Self.addressBound, let val = arg(i), let unicodeScalar = Unicode.Scalar(val) {
+                
+                let char = Character(unicodeScalar)
+                print(char, terminator: "")
+                
+            }
+            
+        default:
+            
+            break
+            
+        }
+        
+        // Delete trap request.
+        ram[Self.trapRequestAddress] = 0
+        
     }
     
     
