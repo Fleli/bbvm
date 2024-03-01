@@ -187,6 +187,8 @@ class BreadboardVM {
                 let char = Character(unicodeScalar)
                 print(char, terminator: "")
                 
+                i += 1
+                
             }
             
         default:
