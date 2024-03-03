@@ -43,11 +43,12 @@ class BreadboardVM {
             print(ram.delimitedDescription(T(viewSubrange.start), T(viewSubrange.end)))
         }
         
-        print("\n--------------------------------------\n\nReturned from main\t\t\(ram[2046])\n\n--------------------------------------\n")
-        
         if (self.numberOfInstructions >= Self.maximumNumberOfInstructions) {
             print("\nTERMINATED DUE TO LONG EXECUTION: \(self.numberOfInstructions)\n")
+            exit(1)
         }
+        
+        exit(Int32(ram[2046]))
         
     }
     
@@ -176,7 +177,8 @@ class BreadboardVM {
         case 1:
             
             func arg(_ i: T) -> T? {
-                let val = ram[Self.trapRequestAddress + i]
+                let ptr = ram[Self.trapRequestAddress + 1] + i
+                let val = ram[ptr]
                 return (val == 0) ? nil : val
             }
             
